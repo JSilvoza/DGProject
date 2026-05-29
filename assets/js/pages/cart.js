@@ -8,6 +8,7 @@ import { formatPrice } from '../domain/pricing.js';
 import { initNav }    from '../components/Nav.js';
 import { renderFooter } from '../components/Footer.js';
 import { showToast }  from '../components/Toast.js';
+import { mountEmptyState, EmptyStates } from '../components/EmptyState.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
@@ -28,9 +29,9 @@ function renderCart() {
   const titleEl    = document.getElementById('cartTitle');
 
   if (!items.length) {
-    layoutEl?.style && (layoutEl.style.display = 'none');
-    emptyEl?.style  && (emptyEl.style.display  = 'block');
-    if (titleEl) titleEl.textContent = 'Your Cart';
+    if (layoutEl) layoutEl.style.display = 'none';
+    if (emptyEl)  mountEmptyState(emptyEl, EmptyStates.cart());
+    if (titleEl)  titleEl.textContent = 'Your Cart';
     return;
   }
 

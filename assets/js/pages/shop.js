@@ -8,6 +8,8 @@ import { renderProductCard, bindQuickAdd }   from '../components/ProductCard.js'
 import { initNav }          from '../components/Nav.js';
 import { renderFooter }     from '../components/Footer.js';
 import { initScrollReveal } from '../components/ScrollReveal.js';
+import { showSkeletons, hideSkeletons } from '../components/Skeleton.js';
+import { mountEmptyState, EmptyStates } from '../components/EmptyState.js';
 
 /* ── UI state ────────────────────────────────────────────────────── */
 
@@ -39,7 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
   _bindFilterToggle();
   _bindClearFilters();
   _syncFilterUI();
-  render();
+
+  /* Show skeleton placeholders on first load — gives immediate visual feedback */
+  if (gridEl) showSkeletons(gridEl, 'product-card', 8);
+
+  /* rAF defers the actual render until after the skeleton has painted */
+  requestAnimationFrame(render);
 });
 
 /* ── Render ──────────────────────────────────────────────────────── */
@@ -53,15 +60,12 @@ function render() {
   if (countEl) countEl.textContent = `${sorted.length} product${sorted.length !== 1 ? 's' : ''}`;
 
   if (sorted.length === 0) {
-    gridEl.innerHTML = `
-      <div class="no-results">
-        <p style="font-size:var(--text-2xl);margin-bottom:var(--sp-4);">—</p>
-        <p style="margin-bottom:var(--sp-3);">No products match your filters.</p>
-        <button class="btn btn-outline btn--sm" data-action="clear-filters">Clear all filters</button>
-      </div>`;
+    hideSkeletons(gridEl);
+    mountEmptyState(gridEl, EmptyStates.noProducts(clearAllFilters));
     return;
   }
 
+  hideSkeletons(gridEl);
   gridEl.innerHTML = sorted
     .map((p, i) => `<div class="animate-on-scroll" style="transition-delay:${Math.min(i, 8) * 40}ms">${renderProductCard(p)}</div>`)
     .join('');
