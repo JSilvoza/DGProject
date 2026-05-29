@@ -40,10 +40,17 @@ DG.ui = (() => {
       });
     }
 
-    // Scroll shadow
+    // Scroll shadow — RAF-throttled so the style mutation happens at most
+    // once per animation frame regardless of how fast the user scrolls.
+    let _scrollRaf = false;
     const onScroll = () => {
-      header.style.borderBottomColor =
-        window.scrollY > 10 ? 'rgba(255,255,255,0.06)' : '';
+      if (_scrollRaf) return;
+      _scrollRaf = true;
+      requestAnimationFrame(() => {
+        header.style.borderBottomColor =
+          window.scrollY > 10 ? 'rgba(255,255,255,0.06)' : '';
+        _scrollRaf = false;
+      });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -321,46 +328,31 @@ DG.ui = (() => {
     `;
   }
 
-  /* ── Lazy load images ─────────────────────────────────────── */
-
-  function initLazyImages() {
-    if (!('IntersectionObserver' in window)) return;
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          if (img.dataset.src) {
-            img.src = img.dataset.src;
-            img.removeAttribute('data-src');
-          }
-          observer.unobserve(img);
-        }
-      });
-    }, { rootMargin: '200px' });
-
-    document.querySelectorAll('img[data-src]').forEach(img => observer.observe(img));
-  }
-
   /* ── Animate on scroll ────────────────────────────────────── */
+
+  /* Single persistent observer shared across all initScrollAnimations()
+     calls (e.g. after each filter change on the shop page).
+     Uses CSS classes instead of inline styles — one class toggle per
+     element instead of two separate style property assignments. */
+  let _scrollObserver = null;
 
   function initScrollAnimations() {
     if (!('IntersectionObserver' in window)) return;
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1 });
+    if (!_scrollObserver) {
+      _scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animated');
+            _scrollObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+    }
 
-    document.querySelectorAll('.animate-on-scroll').forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(24px)';
-      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-      observer.observe(el);
+    /* Only observe elements that haven't animated yet */
+    document.querySelectorAll('.animate-on-scroll:not(.animated)').forEach(el => {
+      _scrollObserver.observe(el);
     });
   }
 
@@ -371,6 +363,6 @@ DG.ui = (() => {
     initAccordions,
     openModal, closeModal,
     renderFooter,
-    initLazyImages, initScrollAnimations,
+    initScrollAnimations,
   };
 })();

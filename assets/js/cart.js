@@ -11,19 +11,32 @@ DG.cart = (() => {
 
   /* ── Persistence ─────────────────────────────────────────── */
 
+  /* In-memory parse cache: avoids re-parsing localStorage on every
+     getCount/getItems/getSubtotal call within the same JS task.
+     Invalidated on every save() and on storage events from other tabs. */
+  let _cache = null;
+
   function load() {
+    if (_cache) return _cache;
     try {
-      return JSON.parse(localStorage.getItem(KEY)) || { items: [] };
+      _cache = JSON.parse(localStorage.getItem(KEY)) || { items: [] };
     } catch {
-      return { items: [] };
+      _cache = { items: [] };
     }
+    return _cache;
   }
 
   function save(state) {
+    _cache = null; // invalidate before write so next load() re-parses
     state.updatedAt = new Date().toISOString();
     localStorage.setItem(KEY, JSON.stringify(state));
     window.dispatchEvent(new CustomEvent('dg:cart:updated', { detail: state }));
   }
+
+  /* Cross-tab invalidation: another tab wrote to localStorage */
+  window.addEventListener('storage', (e) => {
+    if (e.key === KEY) _cache = null;
+  });
 
   /* ── Read ─────────────────────────────────────────────────── */
 
@@ -40,12 +53,9 @@ DG.cart = (() => {
   }
 
   function getSubtotal() {
-    return getItems().reduce((sum, item) => {
-      const product = DG.getProductById(item.productId);
-      if (!product) return sum;
-      const price = DG.getDisplayPrice(product);
-      return sum + price * item.quantity;
-    }, 0);
+    /* Use snapshot price stored at add-time — avoids getProductById lookup
+       per item and removes the products.js dependency from cart/checkout. */
+    return getItems().reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
   }
 
   function isEmpty() {
@@ -73,6 +83,7 @@ DG.cart = (() => {
       state.items.push({
         id:        `${productId}-${size}-${color}-${Date.now()}`,
         productId,
+        slug:      product ? product.slug  : '',  // stored so cart.html needs no product lookup
         size,
         color,
         quantity:  Math.min(quantity, 10),

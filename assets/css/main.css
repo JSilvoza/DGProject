@@ -23,10 +23,6 @@ body {
   padding-inline: var(--container-pad);
 }
 
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-6); }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-6); }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-6); }
-
 .flex-center { display: flex; align-items: center; justify-content: center; }
 .flex-between { display: flex; align-items: center; justify-content: space-between; }
 
@@ -1963,6 +1959,18 @@ body {
 
 .animate-fade {
   animation: fadeIn 0.5s ease both;
+}
+
+/* Scroll-reveal — toggled by the IntersectionObserver in ui.js.
+   Using classes (one reflow) instead of two inline style properties. */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.animate-on-scroll.animated {
+  opacity: 1;
+  transform: none;
 }
 
 /* === 21. UTILITIES =============================================== */

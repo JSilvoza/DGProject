@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="checkout-summary">
         <div class="checkout-summary__items">
           ${items.map(item => {
-            const p = DG.getProductById(item.productId);
             return `
               <div class="checkout-summary__item">
                 <div class="checkout-summary__img-wrap">

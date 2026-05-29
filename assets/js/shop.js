@@ -47,15 +47,20 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Filter & sort logic ──────────────────────────────────── */
 
   function applyFilters(products) {
+    /* Only compute display price when a price range is actually set —
+       avoids calling getDisplayPrice on every product for every filter. */
+    const priceActive = filters.minPrice > 0 || filters.maxPrice < Infinity;
+
     return products.filter(p => {
       if (filters.category.size && !filters.category.has(p.category)) return false;
-      if (filters.size.size && !filters.size.has('any') &&
-          !p.sizes.some(s => filters.size.has(s))) return false;
-      if (filters.special.has('new') && !p.isNew) return false;
-      if (filters.special.has('sale') && !p.isSale) return false;
-      if (filters.special.has('bestseller') && !p.isBestseller) return false;
-      const price = DG.getDisplayPrice(p);
-      if (price < filters.minPrice || price > filters.maxPrice) return false;
+      if (filters.size.size    && !p.sizes.some(s => filters.size.has(s))) return false;
+      if (filters.special.has('new')        && !p.isNew)         return false;
+      if (filters.special.has('sale')       && !p.isSale)        return false;
+      if (filters.special.has('bestseller') && !p.isBestseller)  return false;
+      if (priceActive) {
+        const price = DG.getDisplayPrice(p);
+        if (price < filters.minPrice || price > filters.maxPrice) return false;
+      }
       return true;
     });
   }
@@ -63,12 +68,20 @@ document.addEventListener('DOMContentLoaded', () => {
   function applySort(products) {
     const arr = [...products];
     switch (sortKey) {
-      case 'price-asc':  return arr.sort((a, b) => DG.getDisplayPrice(a) - DG.getDisplayPrice(b));
-      case 'price-desc': return arr.sort((a, b) => DG.getDisplayPrice(b) - DG.getDisplayPrice(a));
-      case 'newest':     return arr.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
-      case 'bestseller': return arr.sort((a, b) => (b.isBestseller ? 1 : 0) - (a.isBestseller ? 1 : 0));
+      case 'price-asc':
+      case 'price-desc': {
+        /* Precompute display price once per product (O(n)) before sorting
+           instead of recomputing inside the comparator (O(n log n) calls). */
+        const dir = sortKey === 'price-asc' ? 1 : -1;
+        return arr
+          .map(p => ({ p, price: DG.getDisplayPrice(p) }))
+          .sort((a, b) => (a.price - b.price) * dir)
+          .map(x => x.p);
+      }
+      case 'newest':     return arr.sort((a, b) => (b.isNew       ? 1 : 0) - (a.isNew       ? 1 : 0));
+      case 'bestseller': return arr.sort((a, b) => (b.isBestseller? 1 : 0) - (a.isBestseller? 1 : 0));
       case 'rating':     return arr.sort((a, b) => b.rating - a.rating);
-      default:           return arr; // featured order
+      default:           return arr;
     }
   }
 

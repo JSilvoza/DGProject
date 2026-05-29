@@ -8,7 +8,8 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap"></noscript>
 
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/reset.css">
@@ -135,7 +136,6 @@
 
   <footer class="footer" id="footer"></footer>
 
-  <script src="assets/js/data/products.js"></script>
   <script src="assets/js/cart.js"></script>
   <script src="assets/js/ui.js"></script>
   <script>
@@ -167,14 +167,13 @@
         const itemsEl = document.getElementById('cartItems');
         if (itemsEl) {
           itemsEl.innerHTML = items.map(item => {
-            const product = DG.getProductById(item.productId);
             return `
               <div class="cart-item" data-item-id="${item.id}">
-                <a href="product.html?slug=${product?.slug || ''}" class="cart-item__img-wrap">
+                <a href="product.html?slug=${item.slug || ''}" class="cart-item__img-wrap">
                   <img src="${item.image}" alt="${item.name}" class="cart-item__img" loading="lazy">
                 </a>
                 <div class="cart-item__info">
-                  <a href="product.html?slug=${product?.slug || ''}" class="cart-item__name">${item.name}</a>
+                  <a href="product.html?slug=${item.slug || ''}" class="cart-item__name">${item.name}</a>
                   <div class="cart-item__meta">
                     <span>${item.size}</span>
                     <span>·</span>
