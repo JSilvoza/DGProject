@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return `
       <div class="checkout-step">
         <h2 class="checkout-step__title">Shipping address</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);margin-bottom:var(--sp-4)">
+        <div class="form-row-2">
           <div class="form-group">
             <label class="form-label">First name</label>
             <input type="text" class="form-input" id="firstNameInput" value="${formData.firstName}" placeholder="Jane">
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <label class="form-label">Apartment, suite, etc. (optional)</label>
           <input type="text" class="form-input" id="addr2Input" value="${formData.address2}" placeholder="Apt 4B">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--sp-4);margin-bottom:var(--sp-8)">
+        <div class="form-row-3">
           <div class="form-group">
             <label class="form-label">City</label>
             <input type="text" class="form-input" id="cityInput" value="${formData.city}" placeholder="New York">
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <label class="form-label">Name on card</label>
           <input type="text" class="form-input" id="cardNameInput" value="${formData.cardName}" placeholder="Jane Doe">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);margin-bottom:var(--sp-8)">
+        <div class="form-row-2">
           <div class="form-group">
             <label class="form-label">Expiry date</label>
             <input type="text" class="form-input" id="cardExpiryInput" value="${formData.cardExpiry}" placeholder="MM / YY" maxlength="7">

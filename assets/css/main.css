@@ -11,6 +11,7 @@ body {
   color: var(--clr-text);
   background-color: var(--clr-bg);
   line-height: var(--leading-normal);
+  overflow-x: hidden; /* prevent accidental horizontal scroll on mobile */
 }
 
 /* === 2. LAYOUT =================================================== */
@@ -90,6 +91,8 @@ body {
   transition: background var(--ease-base), color var(--ease-base), border-color var(--ease-base), transform var(--ease-fast);
   white-space: nowrap;
   user-select: none;
+  touch-action: manipulation; /* eliminates 300ms tap delay on Android */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn:active { transform: scale(0.98); }
@@ -667,6 +670,7 @@ body {
 .hero {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh; /* dvh tracks the actual visible viewport on iOS Safari */
   display: grid;
   align-items: end;
   overflow: hidden;
@@ -1977,7 +1981,74 @@ body {
 
 .page-offset { padding-top: var(--header-h); }
 
-/* === 22. RESPONSIVE ============================================== */
+/* === 22. LAYOUT CLASSES (replaces un-overridable inline styles) == */
+
+/* index.html — brand story two-column */
+.about-strip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-16);
+  align-items: center;
+}
+
+/* index.html — 2×2 stat counters */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+
+/* about.html — four-step process row */
+.process-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-6);
+}
+
+/* checkout.js — address form rows */
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-8);
+}
+
+/* === 23. TOUCH / POINTER ========================================= */
+
+/* Remove tap highlight globally */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Minimum 44px touch targets on all interactive elements */
+button, [role="button"], a, select,
+.size-btn, .size-filter-btn, .color-swatch,
+.header__icon-btn, .qty-btn, .accordion-trigger {
+  touch-action: manipulation;
+}
+
+/* On touch-primary devices (phones/tablets), show hover-only elements */
+@media (hover: none) {
+  /* Quick-add panel is always visible — tap to choose size */
+  .product-card__quick-add {
+    transform: translateY(0);
+  }
+  /* Wishlist is always visible */
+  .product-card__wishlist {
+    opacity: 1;
+  }
+  /* Size buttons in quick-add need enough height for a finger */
+  .product-card__size-btn {
+    height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* === 24. RESPONSIVE ============================================== */
 
 @media (max-width: 1200px) {
   .pdp__layout { grid-template-columns: 1fr 420px; gap: var(--sp-10); }
@@ -1998,6 +2069,8 @@ body {
   .filter-sidebar.open { display: block; }
   .filter-toggle-btn { display: flex; }
   .about-grid { grid-template-columns: 1fr; }
+  .about-strip-grid { grid-template-columns: 1fr; gap: var(--sp-10); }
+  .process-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -2018,12 +2091,32 @@ body {
   .cart-item { grid-template-columns: 80px 1fr; }
   .cart-item__actions { grid-column: 2; flex-direction: row; justify-content: space-between; align-items: center; }
   .toast-container { left: var(--sp-4); right: var(--sp-4); max-width: none; }
+  .form-row-3 { grid-template-columns: 1fr 1fr; } /* city+state one row, zip wraps */
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
 }
 
 @media (max-width: 480px) {
+  :root { --container-pad: 1rem; }
   .categories-grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-2); }
   .product-grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); }
   .hero__actions { flex-direction: column; }
   .footer__grid { grid-template-columns: 1fr; }
   .footer__bottom { flex-direction: column; text-align: center; }
+  .process-grid { grid-template-columns: 1fr; gap: var(--sp-4); }
+  .form-row-2 { grid-template-columns: 1fr; }
+  .form-row-3 { grid-template-columns: 1fr; margin-bottom: var(--sp-4); }
+
+  /* PDP — stack ATC button below qty+wishlist on narrow screens */
+  .pdp__qty-row { flex-wrap: wrap; }
+  .pdp__atc-btn { flex: 1 0 100%; order: 3; }
+  .pdp__wishlist-btn { margin-left: auto; }
+
+  /* Checkout progress — numbers only, drop text labels */
+  .checkout-progress__label { display: none; }
+
+  /* Cart title compact */
+  .cart-header h1 { font-size: var(--text-2xl); }
+
+  /* Section header stacks vertically */
+  .section-header { flex-direction: column; align-items: flex-start; }
 }
