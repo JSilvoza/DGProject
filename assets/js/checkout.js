@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const items     = DG.cart.getItems();
     const subtotal  = DG.cart.getSubtotal();
-    const shipping  = formData.shippingMethod === 'express' ? 19.95
-                    : formData.shippingMethod === 'overnight' ? 39.95
+    const shipping  = formData.shippingMethod === 'express'   ? DG.cart.EXPRESS_SHIPPING
+                    : formData.shippingMethod === 'overnight' ? DG.cart.OVERNIGHT_SHIPPING
                     : DG.cart.getShipping();
     const discount  = formData.promoCode ? formData.promoCode.discount : 0;
     const total     = subtotal + shipping - discount;
@@ -125,9 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderShippingStep() {
     const methods = [
-      { id: 'standard',  label: 'Standard Shipping',  eta: '5–7 business days', price: DG.cart.getSubtotal() >= DG.cart.SHIPPING_THRESHOLD ? 'Free' : '$9.95' },
-      { id: 'express',   label: 'Express Shipping',   eta: '2–3 business days', price: '$19.95' },
-      { id: 'overnight', label: 'Overnight Shipping', eta: 'Next business day',  price: '$39.95' },
+      { id: 'standard',  label: 'Standard Shipping',  eta: '5–7 business days', price: DG.cart.getSubtotal() >= DG.cart.SHIPPING_THRESHOLD ? 'Free' : DG.formatPrice(DG.cart.STANDARD_SHIPPING) },
+      { id: 'express',   label: 'Express Shipping',   eta: '2–3 business days', price: DG.formatPrice(DG.cart.EXPRESS_SHIPPING) },
+      { id: 'overnight', label: 'Overnight Shipping', eta: 'Next business day',  price: DG.formatPrice(DG.cart.OVERNIGHT_SHIPPING) },
     ];
 
     return `

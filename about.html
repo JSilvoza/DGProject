@@ -157,18 +157,26 @@
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-6)">
-          ${[
-            { num: '01', title: 'Concept', text: 'Every piece starts from a real wardrobe need — not a trend board.' },
-            { num: '02', title: 'Material', text: 'We sample from 8–12 mills per product before committing to a fabric.' },
-            { num: '03', title: 'Prototype', text: 'Three to six weartest rounds before final approval. Fit is non-negotiable.' },
-            { num: '04', title: 'Production', text: 'Small batches. Direct relationships. No overproduction.' },
-          ].map(s => `
-            <div class="animate-on-scroll" style="text-align:center;padding:var(--sp-6)">
-              <div style="font-family:var(--font-display);font-size:var(--text-4xl);font-weight:var(--weight-bold);color:var(--clr-accent-dim);margin-bottom:var(--sp-4)">${s.num}</div>
-              <div style="font-weight:var(--weight-semibold);margin-bottom:var(--sp-3)">${s.title}</div>
-              <p style="font-size:var(--text-sm);color:var(--clr-text-secondary);line-height:var(--leading-relaxed)">${s.text}</p>
-            </div>
-          `).join('')}
+          <div class="animate-on-scroll" style="text-align:center;padding:var(--sp-6)">
+            <div style="font-family:var(--font-display);font-size:var(--text-4xl);font-weight:var(--weight-bold);color:var(--clr-accent-dim);margin-bottom:var(--sp-4)">01</div>
+            <div style="font-weight:var(--weight-semibold);margin-bottom:var(--sp-3)">Concept</div>
+            <p style="font-size:var(--text-sm);color:var(--clr-text-secondary);line-height:var(--leading-relaxed)">Every piece starts from a real wardrobe need — not a trend board.</p>
+          </div>
+          <div class="animate-on-scroll" style="text-align:center;padding:var(--sp-6)">
+            <div style="font-family:var(--font-display);font-size:var(--text-4xl);font-weight:var(--weight-bold);color:var(--clr-accent-dim);margin-bottom:var(--sp-4)">02</div>
+            <div style="font-weight:var(--weight-semibold);margin-bottom:var(--sp-3)">Material</div>
+            <p style="font-size:var(--text-sm);color:var(--clr-text-secondary);line-height:var(--leading-relaxed)">We sample from 8–12 mills per product before committing to a fabric.</p>
+          </div>
+          <div class="animate-on-scroll" style="text-align:center;padding:var(--sp-6)">
+            <div style="font-family:var(--font-display);font-size:var(--text-4xl);font-weight:var(--weight-bold);color:var(--clr-accent-dim);margin-bottom:var(--sp-4)">03</div>
+            <div style="font-weight:var(--weight-semibold);margin-bottom:var(--sp-3)">Prototype</div>
+            <p style="font-size:var(--text-sm);color:var(--clr-text-secondary);line-height:var(--leading-relaxed)">Three to six weartest rounds before final approval. Fit is non-negotiable.</p>
+          </div>
+          <div class="animate-on-scroll" style="text-align:center;padding:var(--sp-6)">
+            <div style="font-family:var(--font-display);font-size:var(--text-4xl);font-weight:var(--weight-bold);color:var(--clr-accent-dim);margin-bottom:var(--sp-4)">04</div>
+            <div style="font-weight:var(--weight-semibold);margin-bottom:var(--sp-3)">Production</div>
+            <p style="font-size:var(--text-sm);color:var(--clr-text-secondary);line-height:var(--leading-relaxed)">Small batches. Direct relationships. No overproduction.</p>
+          </div>
         </div>
       </div>
     </section>

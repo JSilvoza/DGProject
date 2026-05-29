@@ -78,40 +78,55 @@ DG.ui = (() => {
     return toastContainer;
   }
 
+  const TOAST_ICONS = {
+    success: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    error:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    info:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  };
+
   function toast(title, message = '', type = 'info', duration = 3500) {
     const container = ensureToastContainer();
 
-    const icons = {
-      success: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-      error:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
-      info:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-    };
+    const titleEl   = document.createElement('div');
+    titleEl.className = 'toast__title';
+    titleEl.textContent = title;
+
+    const contentEl = document.createElement('div');
+    contentEl.className = 'toast__content';
+    contentEl.appendChild(titleEl);
+
+    if (message) {
+      const msgEl = document.createElement('div');
+      msgEl.className = 'toast__message';
+      msgEl.textContent = message;
+      contentEl.appendChild(msgEl);
+    }
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast__close';
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+    const iconEl = document.createElement('span');
+    iconEl.className = 'toast__icon';
+    iconEl.innerHTML = TOAST_ICONS[type] || TOAST_ICONS.info;
 
     const el = document.createElement('div');
     el.className = `toast toast--${type}`;
-    el.innerHTML = `
-      <span class="toast__icon">${icons[type] || icons.info}</span>
-      <div class="toast__content">
-        <div class="toast__title">${title}</div>
-        ${message ? `<div class="toast__message">${message}</div>` : ''}
-      </div>
-      <button class="toast__close" aria-label="Close">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    `;
-
+    el.append(iconEl, contentEl, closeBtn);
     container.appendChild(el);
 
-    const remove = () => {
+    const dismiss = () => {
       el.style.opacity = '0';
       el.style.transform = 'translateX(24px)';
       el.style.transition = 'opacity 200ms, transform 200ms';
       setTimeout(() => el.remove(), 220);
     };
 
-    el.querySelector('.toast__close').addEventListener('click', remove);
-    const timer = setTimeout(remove, duration);
+    let timer = setTimeout(dismiss, duration);
+    closeBtn.addEventListener('click', () => { clearTimeout(timer); dismiss(); });
     el.addEventListener('mouseenter', () => clearTimeout(timer));
+    el.addEventListener('mouseleave', () => { timer = setTimeout(dismiss, duration); });
 
     return el;
   }
@@ -120,18 +135,16 @@ DG.ui = (() => {
 
   function renderProductCard(product, opts = {}) {
     const displayPrice = DG.getDisplayPrice(product);
-    const badge = product.badge;
-    const badgeClass = badge === 'New' ? 'badge-new'
-                     : badge === 'Sale' ? 'badge-sale'
-                     : badge === 'Bestseller' ? 'badge-bestseller' : '';
+    const badge        = product.badge;
+    const badgeClass   = DG.getBadgeClass(badge);
 
     const sizeButtons = product.sizes
-      .filter(s => !['One Size'].includes(s))
+      .filter(s => s !== 'One Size')
       .slice(0, 5)
       .map(size => `<button class="product-card__size-btn" data-product-id="${product.id}" data-size="${size}">${size}</button>`)
       .join('');
 
-    const stars = '★'.repeat(Math.floor(product.rating)) + (product.rating % 1 >= 0.5 ? '½' : '');
+    const stars = DG.renderStars(product.rating);
 
     return `
       <article class="product-card" data-product-id="${product.id}">
@@ -178,30 +191,33 @@ DG.ui = (() => {
 
   /* ── Quick-add handler (for cards) ───────────────────────── */
 
+  /* WeakSet prevents stacking multiple listeners on the same container
+     across re-renders (e.g. each shop filter change re-calls bindQuickAdd). */
+  const _boundContainers = new WeakSet();
+
   function bindQuickAdd(container) {
+    if (_boundContainers.has(container)) return;
+    _boundContainers.add(container);
+
     container.addEventListener('click', (e) => {
       const sizeBtn = e.target.closest('.product-card__size-btn');
       if (!sizeBtn) return;
       e.preventDefault();
       e.stopPropagation();
 
-      const productId = parseInt(sizeBtn.dataset.productId);
-      const size = sizeBtn.dataset.size;
-      const product = DG.getProductById(productId);
+      const productId = parseInt(sizeBtn.dataset.productId, 10);
+      const size      = sizeBtn.dataset.size;
+      const product   = DG.getProductById(productId);
       if (!product) return;
 
-      const color = product.colors[0].name;
-      DG.cart.addItem(productId, size, color);
-
+      DG.cart.addItem(productId, size, product.colors[0].name);
       toast('Added to cart', `${product.name} — ${size}`, 'success');
 
       sizeBtn.textContent = '✓';
-      sizeBtn.style.background = 'var(--clr-success)';
-      sizeBtn.style.borderColor = 'var(--clr-success)';
-      sizeBtn.style.color = 'white';
+      sizeBtn.style.cssText = 'background:var(--clr-success);border-color:var(--clr-success);color:white';
       setTimeout(() => {
         sizeBtn.textContent = size;
-        sizeBtn.style = '';
+        sizeBtn.removeAttribute('style');
       }, 1500);
     });
   }

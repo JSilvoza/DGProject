@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="no-results">
           <p style="font-size:var(--text-2xl); margin-bottom:var(--sp-4);">—</p>
           <p style="margin-bottom:var(--sp-3);">No products match your filters.</p>
-          <button class="btn btn-outline btn--sm" onclick="clearAllFiltersAction()">Clear all filters</button>
+          <button class="btn btn-outline btn--sm" data-action="clear-filters">Clear all filters</button>
         </div>
       `;
       return;
@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     DG.ui.bindQuickAdd(gridEl);
     DG.ui.initScrollAnimations();
-    renderActiveTags();
   }
 
   /* ── Active filter tags ───────────────────────────────────── */
@@ -135,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  window.clearAllFiltersAction = function() {
+  function clearAllFilters() {
     filters.category.clear();
     filters.size.clear();
     filters.color.clear();
@@ -145,7 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.filter-option').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.size-filter-btn').forEach(el => el.classList.remove('active'));
     refresh();
-  };
+  }
+
+  /* Expose for the no-results button rendered via innerHTML (data-action delegation) */
+  document.addEventListener('click', (e) => {
+    if (e.target.matches('[data-action="clear-filters"]')) clearAllFilters();
+  });
 
   /* ── Filter UI binding ───────────────────────────────────── */
 
@@ -246,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Clear all ───────────────────────────────────────────── */
 
   if (clearAllBtn) {
-    clearAllBtn.addEventListener('click', () => window.clearAllFiltersAction());
+    clearAllBtn.addEventListener('click', clearAllFilters);
   }
 
   /* ── Sync filter UI to state ─────────────────────────────── */
@@ -261,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function refresh() {
-    render();
+    render();         // render() does not call renderActiveTags internally
     renderActiveTags();
   }
 

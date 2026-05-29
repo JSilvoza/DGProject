@@ -571,13 +571,16 @@ DG.products = [
   },
 ];
 
+/* ── O(1) lookup maps (built once at load time) ───────────────── */
+
+const _productById   = new Map(DG.products.map(p => [p.id,   p]));
+const _productBySlug = new Map(DG.products.map(p => [p.slug, p]));
+
 /* ── Utility helpers ──────────────────────────────────────────── */
 
-DG.getProductBySlug = (slug) =>
-  DG.products.find(p => p.slug === slug) || null;
+DG.getProductBySlug = (slug) => _productBySlug.get(slug) || null;
 
-DG.getProductById = (id) =>
-  DG.products.find(p => p.id === id) || null;
+DG.getProductById = (id) => _productById.get(id) || null;
 
 DG.getProductsByCategory = (category) =>
   category === 'all'
@@ -595,8 +598,8 @@ DG.getRelatedProducts = (product) =>
     .map(id => DG.getProductById(id))
     .filter(Boolean);
 
-DG.formatPrice = (cents) =>
-  '$' + Number(cents).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+DG.formatPrice = (amount) =>
+  '$' + Number(amount).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 DG.getDisplayPrice = (product) =>
   product.salePrice || product.price;
@@ -606,24 +609,31 @@ DG.getSalePercent = (product) =>
     ? Math.round((1 - product.salePrice / product.price) * 100)
     : 0;
 
+/* Canonical star renderer — single source of truth used by all UI */
 DG.renderStars = (rating) => {
-  const full  = Math.floor(rating);
-  const half  = rating % 1 >= 0.5 ? 1 : 0;
-  const empty = 5 - full - half;
-  return (
-    '★'.repeat(full) +
-    (half ? '½' : '') +
-    '☆'.repeat(empty)
-  );
+  const full = Math.floor(rating);
+  const half = rating % 1 >= 0.5 ? 1 : 0;
+  return '★'.repeat(full) + (half ? '½' : '');
 };
 
-DG.CATEGORIES = [
-  { slug: 'tops',        label: 'Tops',       count: 6,
-    bg: 'linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%)' },
-  { slug: 'bottoms',     label: 'Bottoms',    count: 4,
-    bg: 'linear-gradient(135deg, #1c2b1a 0%, #2a3d28 100%)' },
-  { slug: 'outerwear',   label: 'Outerwear',  count: 4,
-    bg: 'linear-gradient(135deg, #2b1a1a 0%, #3d2828 100%)' },
-  { slug: 'accessories', label: 'Accessories', count: 5,
-    bg: 'linear-gradient(135deg, #1a2028 0%, #28303e 100%)' },
-];
+/* Canonical badge→CSS-class mapper — single source of truth */
+DG.getBadgeClass = (badge) =>
+  badge === 'New'        ? 'badge-new'
+  : badge === 'Sale'       ? 'badge-sale'
+  : badge === 'Bestseller' ? 'badge-bestseller'
+  : '';
+
+/* Counts derived from actual catalog — never drift from products[] */
+const _CATEGORY_META = {
+  tops:        { label: 'Tops',        bg: 'linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%)' },
+  bottoms:     { label: 'Bottoms',     bg: 'linear-gradient(135deg, #1c2b1a 0%, #2a3d28 100%)' },
+  outerwear:   { label: 'Outerwear',   bg: 'linear-gradient(135deg, #2b1a1a 0%, #3d2828 100%)' },
+  accessories: { label: 'Accessories', bg: 'linear-gradient(135deg, #1a2028 0%, #28303e 100%)' },
+};
+
+DG.CATEGORIES = Object.entries(_CATEGORY_META).map(([slug, meta]) => ({
+  slug,
+  label: meta.label,
+  bg:    meta.bg,
+  count: DG.products.filter(p => p.category === slug).length,
+}));

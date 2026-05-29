@@ -112,15 +112,18 @@ DG.cart = (() => {
 
   /* ── Shipping ─────────────────────────────────────────────── */
 
-  const SHIPPING_THRESHOLD = 150; // free shipping above this
+  const SHIPPING_THRESHOLD = 150;  // free standard shipping above this
+  const STANDARD_SHIPPING  = 9.95;
+  const EXPRESS_SHIPPING   = 19.95;
+  const OVERNIGHT_SHIPPING = 39.95;
 
   function getShipping() {
-    const subtotal = getSubtotal();
-    return subtotal >= SHIPPING_THRESHOLD ? 0 : 9.95;
+    return getSubtotal() >= SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING;
   }
 
   function getTotal() {
-    return getSubtotal() + getShipping();
+    const sub = getSubtotal(); // single localStorage read
+    return sub + (sub >= SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING);
   }
 
   /* ── Promo codes ──────────────────────────────────────────── */
@@ -146,6 +149,6 @@ DG.cart = (() => {
     isEmpty, hasItem,
     addItem, removeItem, updateQuantity, clearCart,
     getShipping, getTotal, applyPromo,
-    SHIPPING_THRESHOLD,
+    SHIPPING_THRESHOLD, STANDARD_SHIPPING, EXPRESS_SHIPPING, OVERNIGHT_SHIPPING,
   };
 })();

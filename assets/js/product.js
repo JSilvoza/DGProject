@@ -93,18 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (ratingEl) {
-    const stars = '★'.repeat(Math.floor(product.rating)) + (product.rating % 1 >= 0.5 ? '½' : '');
     ratingEl.innerHTML = `
-      <span class="rating-stars">${stars}</span>
+      <span class="rating-stars">${DG.renderStars(product.rating)}</span>
       <span style="font-size:var(--text-sm);font-weight:var(--weight-medium)">${product.rating}</span>
       <a href="#reviews" class="pdp__review-link">${product.reviewCount} reviews</a>
     `;
   }
 
   if (badgesEl && product.badge) {
-    const cls = product.badge === 'New' ? 'badge-new'
-              : product.badge === 'Sale' ? 'badge-sale' : 'badge-bestseller';
-    badgesEl.innerHTML = `<span class="badge ${cls}">${product.badge}</span>`;
+    badgesEl.innerHTML = `<span class="badge ${DG.getBadgeClass(product.badge)}">${product.badge}</span>`;
   }
 
   /* ── Color selector ──────────────────────────────────────── */
@@ -195,25 +192,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const atcBtn = document.getElementById('atcBtn');
 
-  function validateAndAdd() {
+  /* Single validation function — used by both ATC and Buy Now */
+  function requireSize() {
     if (product.sizes.length > 1 && !selectedSize) {
       if (sizeErrEl) {
         sizeErrEl.style.display = 'block';
         sizeBtnsEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-      return;
+      return false;
     }
+    return true;
+  }
+
+  function validateAndAdd() {
+    if (!requireSize()) return;
 
     const size  = selectedSize || product.sizes[0];
     const color = selectedColor;
 
     DG.cart.addItem(product.id, size, color, quantity);
-
-    DG.ui.toast(
-      'Added to cart',
-      `${product.name} — ${size} / ${color}`,
-      'success'
-    );
+    DG.ui.toast('Added to cart', `${product.name} — ${size} / ${color}`, 'success');
 
     if (atcBtn) {
       const orig = atcBtn.innerHTML;
@@ -226,12 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
   atcBtn?.addEventListener('click', validateAndAdd);
 
   document.getElementById('buyNowBtn')?.addEventListener('click', () => {
-    if (product.sizes.length > 1 && !selectedSize) {
-      if (sizeErrEl) sizeErrEl.style.display = 'block';
-      return;
-    }
-    const size = selectedSize || product.sizes[0];
-    DG.cart.addItem(product.id, size, selectedColor, quantity);
+    if (!requireSize()) return;
+    DG.cart.addItem(product.id, selectedSize || product.sizes[0], selectedColor, quantity);
     window.location.href = 'checkout.html';
   });
 
@@ -273,13 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.title = `${product.name} — DG Studio`;
 
-  /* ── Helper ──────────────────────────────────────────────── */
-
   function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 });
-
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
