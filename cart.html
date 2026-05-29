@@ -11,8 +11,8 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap"></noscript>
 
-  <link rel="stylesheet" href="assets/css/variables.css">
-  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/base/variables.css">
+  <link rel="stylesheet" href="assets/css/base/reset.css">
   <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
@@ -136,139 +136,6 @@
 
   <footer class="footer" id="footer"></footer>
 
-  <script src="assets/js/cart.js"></script>
-  <script src="assets/js/ui.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      DG.ui.initNav();
-      DG.ui.renderFooter();
-
-      let appliedPromo = null;
-
-      function renderCart() {
-        const items    = DG.cart.getItems();
-        const cartLayout = document.getElementById('cartLayout');
-        const cartEmpty  = document.getElementById('cartEmpty');
-        const cartTitle  = document.getElementById('cartTitle');
-
-        if (items.length === 0) {
-          if (cartLayout) cartLayout.style.display = 'none';
-          if (cartEmpty)  cartEmpty.style.display  = 'block';
-          if (cartTitle)  cartTitle.textContent = 'Your Cart';
-          return;
-        }
-
-        if (cartLayout) cartLayout.style.display = '';
-        if (cartEmpty)  cartEmpty.style.display  = 'none';
-
-        const count = DG.cart.getCount();
-        if (cartTitle) cartTitle.textContent = `Your Cart (${count})`;
-
-        const itemsEl = document.getElementById('cartItems');
-        if (itemsEl) {
-          itemsEl.innerHTML = items.map(item => {
-            return `
-              <div class="cart-item" data-item-id="${item.id}">
-                <a href="product.html?slug=${item.slug || ''}" class="cart-item__img-wrap">
-                  <img src="${item.image}" alt="${item.name}" class="cart-item__img" loading="lazy">
-                </a>
-                <div class="cart-item__info">
-                  <a href="product.html?slug=${item.slug || ''}" class="cart-item__name">${item.name}</a>
-                  <div class="cart-item__meta">
-                    <span>${item.size}</span>
-                    <span>·</span>
-                    <span>${item.color}</span>
-                  </div>
-                  <div class="cart-item__price">${DG.formatPrice(item.price)}</div>
-                </div>
-                <div class="cart-item__actions">
-                  <div class="qty-control">
-                    <button class="qty-btn" data-action="decrease" data-item-id="${item.id}" aria-label="Decrease quantity">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </button>
-                    <span class="qty-value">${item.quantity}</span>
-                    <button class="qty-btn" data-action="increase" data-item-id="${item.id}" aria-label="Increase quantity">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </button>
-                  </div>
-                  <button class="cart-item__remove" data-item-id="${item.id}">Remove</button>
-                </div>
-              </div>
-            `;
-          }).join('');
-
-          // Bind qty controls
-          itemsEl.querySelectorAll('[data-action]').forEach(btn => {
-            btn.addEventListener('click', () => {
-              const id     = btn.dataset.itemId;
-              const action = btn.dataset.action;
-              const item   = items.find(i => i.id === id);
-              if (!item) return;
-              if (action === 'increase') {
-                DG.cart.updateQuantity(id, item.quantity + 1);
-              } else {
-                DG.cart.updateQuantity(id, item.quantity - 1);
-              }
-              renderCart();
-            });
-          });
-
-          // Bind remove buttons
-          itemsEl.querySelectorAll('.cart-item__remove').forEach(btn => {
-            btn.addEventListener('click', () => {
-              DG.cart.removeItem(btn.dataset.itemId);
-              DG.ui.toast('Removed', 'Item removed from cart.', 'info');
-              renderCart();
-            });
-          });
-        }
-
-        renderSummary();
-      }
-
-      function renderSummary() {
-        const subtotal = DG.cart.getSubtotal();
-        const shipping = DG.cart.getShipping();
-        const discount = appliedPromo ? appliedPromo.discount : 0;
-        const total    = subtotal + shipping - discount;
-
-        const fmt = DG.formatPrice;
-        document.getElementById('summarySubtotal').textContent = fmt(subtotal);
-        document.getElementById('summaryShipping').textContent = shipping === 0 ? 'Free' : fmt(shipping);
-        document.getElementById('summaryTotal').textContent    = fmt(total);
-
-        const discountRow = document.getElementById('discountRow');
-        const discountEl  = document.getElementById('summaryDiscount');
-        if (discount > 0 && discountRow && discountEl) {
-          discountRow.style.display = '';
-          discountEl.textContent = `−${fmt(discount)}`;
-        } else if (discountRow) {
-          discountRow.style.display = 'none';
-        }
-      }
-
-      // Promo code
-      document.getElementById('applyPromoBtn')?.addEventListener('click', () => {
-        const code = document.getElementById('promoInput')?.value?.trim();
-        if (!code) return;
-        const promo = DG.cart.applyPromo(code);
-        const msgEl = document.getElementById('promoMessage');
-        if (promo) {
-          appliedPromo = promo;
-          if (msgEl) {
-            msgEl.style.display = '';
-            msgEl.textContent = `✓ "${promo.code}" applied — saving ${DG.formatPrice(promo.discount)}`;
-          }
-          document.getElementById('promoInput').value = '';
-          renderSummary();
-          DG.ui.toast('Promo applied!', `${promo.rate * 100}% off`, 'success');
-        } else {
-          DG.ui.toast('Invalid code', 'That promo code isn\'t valid.', 'error');
-        }
-      });
-
-      renderCart();
-    });
-  </script>
+  <script type="module" src="assets/js/pages/cart.js"></script>
 </body>
 </html>

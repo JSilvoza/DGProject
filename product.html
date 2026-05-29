@@ -11,8 +11,8 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap"></noscript>
 
-  <link rel="stylesheet" href="assets/css/variables.css">
-  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/base/variables.css">
+  <link rel="stylesheet" href="assets/css/base/reset.css">
   <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
@@ -236,15 +236,6 @@
 
   <footer class="footer" id="footer"></footer>
 
-  <script src="assets/js/data/products.js"></script>
-  <script src="assets/js/cart.js"></script>
-  <script src="assets/js/ui.js"></script>
-  <script src="assets/js/product.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      DG.ui.initNav();
-      DG.ui.renderFooter();
-    });
-  </script>
+  <script type="module" src="assets/js/pages/product.js"></script>
 </body>
 </html>

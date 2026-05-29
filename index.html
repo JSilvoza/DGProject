@@ -11,8 +11,8 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap"></noscript>
 
-  <link rel="stylesheet" href="assets/css/variables.css">
-  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/base/variables.css">
+  <link rel="stylesheet" href="assets/css/base/reset.css">
   <link rel="stylesheet" href="assets/css/main.css">
 
   <style>
@@ -208,77 +208,6 @@
   <!-- ── Footer ─────────────────────────────────────────────── -->
   <footer class="footer" id="footer"></footer>
 
-  <!-- Scripts -->
-  <script src="assets/js/data/products.js"></script>
-  <script src="assets/js/cart.js"></script>
-  <script src="assets/js/ui.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      DG.ui.initNav();
-      DG.ui.renderFooter();
-      DG.ui.initScrollAnimations();
-
-      /* New Arrivals */
-      const newGrid = document.getElementById('newArrivalsGrid');
-      if (newGrid) {
-        const newProds = DG.products.filter(p => p.isNew).slice(0, 4);
-        newGrid.innerHTML = newProds.map(p => DG.ui.renderProductCard(p)).join('');
-        DG.ui.bindQuickAdd(newGrid);
-      }
-
-      /* Categories */
-      const catGrid = document.getElementById('categoriesGrid');
-      if (catGrid) {
-        catGrid.innerHTML = DG.CATEGORIES.map(cat => `
-          <a href="shop.html?category=${cat.slug}" class="category-card">
-            <div class="category-card__bg" style="background:${cat.bg}"></div>
-            <div class="category-card__overlay"></div>
-            <div class="category-card__content">
-              <div class="category-card__name">${cat.label}</div>
-              <div class="category-card__count">${cat.count} styles</div>
-            </div>
-          </a>
-        `).join('');
-      }
-
-      /* Bestsellers */
-      const bestGrid = document.getElementById('bestsellersGrid');
-      if (bestGrid) {
-        const bests = DG.products.filter(p => p.isBestseller).slice(0, 4);
-        bestGrid.innerHTML = bests.map(p => DG.ui.renderProductCard(p)).join('');
-        DG.ui.bindQuickAdd(bestGrid);
-      }
-
-      /* Newsletter */
-      document.getElementById('newsletterForm')?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('newsletterEmail')?.value;
-        if (email && email.includes('@')) {
-          DG.ui.toast('You\'re in!', 'Welcome to the DG edit.', 'success');
-          document.getElementById('newsletterEmail').value = '';
-        } else {
-          DG.ui.toast('Invalid email', 'Please enter a valid email address.', 'error');
-        }
-      });
-
-      /* Order success banner */
-      if (new URLSearchParams(window.location.search).get('order') === 'success') {
-        const el = document.createElement('div');
-        el.className = 'checkout-success';
-        el.innerHTML = `
-          <div class="checkout-success__icon">✓</div>
-          <h1 class="checkout-success__title">Order placed!</h1>
-          <p class="checkout-success__sub">Thank you for your purchase. You'll receive a confirmation email shortly.</p>
-          <a href="shop.html" class="btn btn-primary btn--lg">Continue shopping</a>
-        `;
-        document.body.appendChild(el);
-        el.addEventListener('click', () => {
-          el.remove();
-          history.replaceState(null,'','/');
-        });
-        setTimeout(() => el.remove(), 5000);
-      }
-    });
-  </script>
+  <script type="module" src="assets/js/pages/home.js"></script>
 </body>
 </html>
